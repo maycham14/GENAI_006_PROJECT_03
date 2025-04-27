@@ -145,33 +145,17 @@ else:
 
 load_dotenv()
 
-# Load API Key from multiple sources
+# Load API Key 
 try:
-    # Method 1: Try environment variables
+    # Method 1: Try environment variables first
     api_key = os.environ.get("OPEN_API_KEY")
 
-    # Method 2: Try Streamlit secrets (for deployment)
+    # Method 2: Try Streamlit secrets second
     if not api_key:
         try:
             api_key = st.secrets["OPEN_API_KEY"]
         except:
             pass
-
-    # Method 3: Fall back to local file
-    if not api_key:
-        # Get absolute path to make sure it works in all environments
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        secrets_path = os.path.join(current_dir, "KEYS", "secrets.toml")
-
-        if os.path.exists(secrets_path):
-            secrets = toml.load(secrets_path)
-            api_key = secrets.get("OPEN_API_KEY")
-            if not api_key:
-                st.error("API key not found in secrets.toml file")
-                api_loaded = False
-        else:
-            st.error("secrets.toml file not found in KEYS directory")
-            api_loaded = False
 
     # Initialize client if we found an API key
     if api_key:
@@ -179,11 +163,11 @@ try:
         api_loaded = True
     else:
         api_loaded = False
+        st.error("API key not found. Please configure OPEN_API_KEY in environment variables or Streamlit secrets.")
 
 except Exception as e:
     st.error(f"Error loading API key: {e}")
-    st.info(
-        "Please make sure your API key is correctly set in environment variables, Streamlit secrets, or KEYS/secrets.toml")
+    st.info("Please set OPEN_API_KEY in your deployment environment")
     api_loaded = False
 
 # Initialize session state
