@@ -1,6 +1,5 @@
 # Default ignored files
-/shelf/
-/workspace.xml/
-/Summarizer_App/KEYS/
-/nltk_data/
-
+/Summarizer_App/KEYS/secrets.toml/
+.KEYS/
+*.toml
+.env
