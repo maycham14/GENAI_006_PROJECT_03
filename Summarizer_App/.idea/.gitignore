@@ -3,3 +3,7 @@
 .KEYS/
 *.toml
 .env
+
+# Default ignored files
+/shelf/
+/workspace.xml

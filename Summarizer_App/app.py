@@ -145,30 +145,37 @@ else:
 
 load_dotenv()
 
-# Load API Key 
+# Load API Key
+# Initialize flag
+api_loaded = False
+
 try:
-    # Method 1: Try environment variables first
-    api_key = os.environ.get("OPEN_API_KEY")
+    # Try Streamlit secrets first
+    try:
+        api_key = st.secrets["OPEN_API_KEY"]
+    except:
+        # Fall back to manual file loading
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        secrets_path = os.path.join(current_dir, ".streamlit", "secrets.toml")
 
-    # Method 2: Try Streamlit secrets second
-    if not api_key:
-        try:
-            api_key = st.secrets["OPEN_API_KEY"]
-        except:
-            pass
+        if os.path.exists(secrets_path):
+            secrets = toml.load(secrets_path)
+            api_key = secrets.get("OPEN_API_KEY")
+        else:
+            api_key = None
 
-    # Initialize client if we found an API key
     if api_key:
         client = OpenAI(api_key=api_key)
         api_loaded = True
     else:
+        st.error("API key not found in Streamlit secrets")
+        st.write("Looked for secrets at:", os.path.join(os.getcwd(), ".streamlit", "secrets.toml"))
         api_loaded = False
-        st.error("API key not found. Please configure OPEN_API_KEY in environment variables or Streamlit secrets.")
-
 except Exception as e:
     st.error(f"Error loading API key: {e}")
-    st.info("Please set OPEN_API_KEY in your deployment environment")
+    st.info("Please add OPEN_API_KEY to .streamlit/secrets.toml")
     api_loaded = False
+
 
 # Initialize session state
 if 'summaries' not in st.session_state:

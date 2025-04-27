@@ -2,3 +2,4 @@
 .env
 KEYS/secrets.toml
 .streamlit/secrets.toml
+git
