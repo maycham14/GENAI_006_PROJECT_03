@@ -1,5 +1,5 @@
 import streamlit as st
-import openai
+from dotenv import load_dotenv
 from openai import OpenAI
 import time
 import fitz  # PyMuPDF for reading PDFs
@@ -143,23 +143,47 @@ else:
     </style>
     """, unsafe_allow_html=True)
 
-# Load API Key from secrets
+load_dotenv()
+
+# Load API Key from multiple sources
 try:
-    if os.path.exists("KEYS/secrets.toml"):
-        secrets = toml.load("KEYS/secrets.toml")
-        api_key = secrets.get("OPEN_API_KEY")
-        if api_key:
-            client = OpenAI(api_key=api_key)
-            api_loaded = True
+    # Method 1: Try environment variables
+    api_key = os.environ.get("OPEN_API_KEY")
+
+    # Method 2: Try Streamlit secrets (for deployment)
+    if not api_key:
+        try:
+            api_key = st.secrets["OPEN_API_KEY"]
+        except:
+            pass
+
+    # Method 3: Fall back to local file
+    if not api_key:
+        # Get absolute path to make sure it works in all environments
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        secrets_path = os.path.join(current_dir, "KEYS", "secrets.toml")
+
+        if os.path.exists(secrets_path):
+            secrets = toml.load(secrets_path)
+            api_key = secrets.get("OPEN_API_KEY")
+            if not api_key:
+                st.error("API key not found in secrets.toml file")
+                api_loaded = False
         else:
-            st.error("API key not found in secrets.toml file")
+            st.error("secrets.toml file not found in KEYS directory")
             api_loaded = False
+
+    # Initialize client if we found an API key
+    if api_key:
+        client = OpenAI(api_key=api_key)
+        api_loaded = True
     else:
-        st.error("secrets.toml file not found in KEYS directory")
         api_loaded = False
+
 except Exception as e:
     st.error(f"Error loading API key: {e}")
-    st.info("Please make sure your API key is correctly set in KEYS/secrets.toml")
+    st.info(
+        "Please make sure your API key is correctly set in environment variables, Streamlit secrets, or KEYS/secrets.toml")
     api_loaded = False
 
 # Initialize session state

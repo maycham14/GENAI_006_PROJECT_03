@@ -1,5 +1,4 @@
 # Ignore API keys and sensitive information
-/Summarizer_App/KEYS/secrets.toml/
-.KEYS/
-*.toml
 .env
+KEYS/secrets.toml
+.streamlit/secrets.toml
